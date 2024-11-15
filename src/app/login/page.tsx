@@ -25,7 +25,7 @@ export default function LoginPage() {
       try {
         await getCurrentUser()
         router.push('/dashboard')
-      } catch (error) {
+      } catch {
         setIsLoading(false)
       }
     }

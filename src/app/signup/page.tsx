@@ -28,7 +28,7 @@ export default function SignUpPage() {
       try {
         await getCurrentUser()
         router.push('/dashboard')
-      } catch (error) {
+      } catch {
         setIsLoading(false)
       }
     }

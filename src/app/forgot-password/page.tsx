@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
       try {
         await getCurrentUser()
         router.push('/dashboard')
-      } catch (error) {
+      } catch {
         setIsLoading(false)
       }
     }
