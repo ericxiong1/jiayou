@@ -10,8 +10,12 @@ import outputs from '../../../amplify_outputs.json'
 
 Amplify.configure(outputs)
 
+interface User {
+    username: string;
+}
+
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
