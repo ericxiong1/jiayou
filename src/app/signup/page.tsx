@@ -1,19 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Amplify } from 'aws-amplify'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { generateClient } from 'aws-amplify/api'
-import { signUp, confirmSignUp } from 'aws-amplify/auth'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { signUp, confirmSignUp, getCurrentUser } from 'aws-amplify/auth'
 import outputs from '../../../amplify_outputs.json'
 
 Amplify.configure(outputs)
-
-const client = generateClient()
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -22,7 +20,21 @@ export default function SignUpPage() {
   const [verificationCode, setVerificationCode] = useState('')
   const [isConfirming, setIsConfirming] = useState(false)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        await getCurrentUser()
+        router.push('/dashboard')
+      } catch (error) {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuthStatus()
+  }, [router])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -62,11 +74,19 @@ export default function SignUpPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      <Card className="w-full max-w-md bg-card text-card-foreground">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
+          <CardTitle className="text-2xl font-semibold leading-none tracking-tight text-center">Create an Account</CardTitle>
           <CardDescription className="text-center">Sign up for your Self Improvement account</CardDescription>
         </CardHeader>
         <CardContent>
@@ -110,8 +130,13 @@ export default function SignUpPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                 </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit" className="w-full">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   Sign Up
                 </Button>
               </div>
@@ -131,8 +156,13 @@ export default function SignUpPage() {
                     onChange={(e) => setVerificationCode(e.target.value)}
                   />
                 </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit" className="w-full">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   Confirm Sign Up
                 </Button>
               </div>
@@ -142,7 +172,7 @@ export default function SignUpPage() {
         <CardFooter className="flex justify-center">
           <div className="text-sm text-center">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary hover:underline hover:text-primary/90">
               Log in
             </Link>
           </div>

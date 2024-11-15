@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Amplify } from 'aws-amplify'
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { resetPassword, confirmResetPassword } from 'aws-amplify/auth'
+import { resetPassword, confirmResetPassword, getCurrentUser } from 'aws-amplify/auth'
 import outputs from '../../../amplify_outputs.json'
 
 Amplify.configure(outputs)
@@ -21,7 +21,21 @@ export default function ForgotPasswordPage() {
   const [isConfirming, setIsConfirming] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        await getCurrentUser()
+        router.push('/dashboard')
+      } catch (error) {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuthStatus()
+  }, [router])
 
   const handleResetRequest = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -62,11 +76,19 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      <Card className="w-full max-w-md bg-card text-card-foreground">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Forgot Password</CardTitle>
+          <CardTitle className="text-2xl font-semibold leading-none tracking-tight text-center">Forgot Password</CardTitle>
           <CardDescription className="text-center">
             {isConfirming ? 'Enter the verification code and your new password' : 'Enter your email to reset your password'}
           </CardDescription>
@@ -88,7 +110,7 @@ export default function ForgotPasswordPage() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   Reset Password
                 </Button>
               </div>
@@ -132,7 +154,7 @@ export default function ForgotPasswordPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   Confirm New Password
                 </Button>
               </div>
@@ -154,7 +176,7 @@ export default function ForgotPasswordPage() {
         <CardFooter className="flex justify-center">
           <div className="text-sm text-center">
             Remember your password?{' '}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary hover:underline hover:text-primary/90">
               Log in
             </Link>
           </div>
