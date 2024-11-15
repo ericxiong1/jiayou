@@ -49,8 +49,10 @@ export default function SignUpPage() {
       await signUp({
         username: email,
         password,
-        attributes: {
-          email,
+        options: {
+          userAttributes: {
+            email,
+          },
         },
       })
       setIsConfirming(true)
